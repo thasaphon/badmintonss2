@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ตารางแข่งขันแบดมินตัน</title>
+
+<style>
+
+body{
+font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
+background:#eef1f6;
+margin:0;
+}
+
+.header{
+background:#1f2d3d;
+color:white;
+padding:18px;
+font-size:20px;
+text-align:center;
+}
+
+.container{
+padding:15px;
+max-width:700px;
+margin:auto;
+}
+
+.card{
+background:white;
+border-radius:12px;
+padding:15px;
+margin-bottom:15px;
+box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+
+select,button{
+width:100%;
+padding:12px;
+margin-top:8px;
+font-size:16px;
+border-radius:8px;
+border:1px solid #ddd;
+}
+
+button{
+background:#2c7be5;
+color:white;
+border:none;
+}
+
+.match{
+background:#f6f8fb;
+padding:12px;
+border-radius:8px;
+margin-top:10px;
+}
+
+.calendar-day{
+padding:10px;
+border-radius:8px;
+background:#f1f3f7;
+margin-top:8px;
+cursor:pointer;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+🏸 ตารางแข่งขันแบดมินตัน
+</div>
+
+<div class="container">
+
+<div class="card">
+
+<label>เลือกผู้เล่น</label>
+<select id="playerSelect"></select>
+
+<button onclick="searchPlayer()">ดูแมตช์</button>
+
+</div>
+
+<div class="card">
+<h3>แมตช์ของผู้เล่น</h3>
+<div id="playerMatches"></div>
+</div>
+
+<div class="card">
+<h3>📅 ปฏิทินการแข่งขัน</h3>
+<div id="calendar"></div>
+</div>
+
+<div class="card">
+<h3>🏸 แมตช์ของวัน</h3>
+<div id="dailyMatches"></div>
+</div>
+
+</div>
+
+<script>
+
+/* DATA */
+
+let matches = [
+
+{blue1:"มอ",blue2:"พร้อม",red1:"ริท",red2:"คิม",date:"23/3/2026"},
+{blue1:"ปลื้ม",blue2:"เอก",red1:"เป๊ะ",red2:"เบญ",date:"23/3/2026"},
+{blue1:"ออกัส",blue2:"หนึ่ง",red1:"โฟก",red2:"เป๊ะ",date:"23/3/2026"},
+{blue1:"น็อต",blue2:"หมู",red1:"ลีโอ",red2:"ยิม",date:"23/3/2026"},
+{blue1:"ขวัญ",blue2:"หมู",red1:"สอง",red2:"อิคคิว",date:"23/3/2026"},
+
+{blue1:"ฟิล์ม",blue2:"ปลาย",red1:"ริท",red2:"โฟก",date:"24/3/2026"},
+{blue1:"ปั๊ม",blue2:"ฟิล์ม",red1:"เต้",red2:"ริท",date:"24/3/2026"},
+{blue1:"พี",blue2:"บาส",red1:"คิม",red2:"ลูกหว้า",date:"24/3/2026"},
+{blue1:"พร้อม",blue2:"พี",red1:"กาย",red2:"ลูกหว้า",date:"24/3/2026"},
+
+{blue1:"โอ๊ต",blue2:"ฟิล์ม",red1:"เต้",red2:"คิม",date:"25/3/2026"},
+{blue1:"ปั๊ม",blue2:"หลุย",red1:"กิต",red2:"เต้",date:"25/3/2026"},
+{blue1:"โอม",blue2:"ขวัญ",red1:"สอง",red2:"บิ๊ว",date:"25/3/2026"},
+{blue1:"หลุย",blue2:"ปลื้ม",red1:"ริท",red2:"เป๊ะ",date:"25/3/2026"},
+
+{blue1:"พี",blue2:"มอ",red1:"เอ๊าะ",red2:"กาย",date:"26/3/2026"},
+{blue1:"ปลาย",blue2:"ออกัส",red1:"เต้",red2:"ปลิว",date:"26/3/2026"},
+{blue1:"ปั๊ม",blue2:"บาส",red1:"เอ๊าะ",red2:"พิชญ์",date:"26/3/2026"},
+{blue1:"ออกัส",blue2:"พิมพ์",red1:"โฟก",red2:"ศิ",date:"26/3/2026"},
+
+{blue1:"ปลาย",blue2:"พิมพ์",red1:"เบญ",red2:"กิต",date:"27/3/2026"},
+{blue1:"พร้อม",blue2:"แบงค์",red1:"ลูกหว้า",red2:"พิชญ์",date:"27/3/2026"},
+{blue1:"มอ",blue2:"แบงค์",red1:"เอ๊าะ",red2:"พิชญ์",date:"27/3/2026"},
+{blue1:"ออกัส",blue2:"เอก",red1:"เป๊ะ",red2:"ศิ",date:"27/3/2026"},
+
+{blue1:"มอ",blue2:"พร้อม",red1:"พิชญ์",red2:"กาย",date:"28/3/2026"},
+{blue1:"หมู",blue2:"โอ๊ต",red1:"อิคคิว",red2:"ยิม",date:"28/3/2026"},
+{blue1:"ปั๊ม",blue2:"ปลาย",red1:"กิต",red2:"ริท",date:"28/3/2026"},
+{blue1:"ฟิล์ม",blue2:"หนึ่ง",red1:"กิต",red2:"ศิ",date:"28/3/2026"},
+
+{blue1:"แบงค์",blue2:"หมู",red1:"บิ๊ว",red2:"กาย",date:"30/3/2026"},
+{blue1:"เมย์",blue2:"หลุย",red1:"ปลิว",red2:"เบญ",date:"30/3/2026"},
+{blue1:"หนึ่ง",blue2:"เอก",red1:"อุ้ม",red2:"เป๊ะ",date:"30/3/2026"},
+{blue1:"เอก",blue2:"ปลื้ม",red1:"พู่กัน",red2:"ศิ",date:"30/3/2026"},
+{blue1:"โอ๊ต",blue2:"พี",red1:"พิชญ์",red2:"สอง",date:"30/3/2026"},
+
+{blue1:"แบงค์",blue2:"หมู",red1:"ลีโอ",red2:"กาย",date:"31/3/2026"},
+{blue1:"ปั๊ม",blue2:"ออกัส",red1:"โฟก",red2:"ปลิว",date:"31/3/2026"},
+{blue1:"น็อต",blue2:"บาส",red1:"คิม",red2:"ลีโอ",date:"31/3/2026"},
+{blue1:"หนึ่ง",blue2:"พิมพ์",red1:"โฟก",red2:"อุ้ม",date:"31/3/2026"},
+
+{blue1:"โอ๊ต",blue2:"ขวัญ",red1:"บิ๊ว",red2:"อิคคิว",date:"1/4/2026"},
+{blue1:"หนึ่ง",blue2:"เมย์",red1:"พู่กัน",red2:"อุ้ม",date:"1/4/2026"},
+{blue1:"พร้อม",blue2:"โอม",red1:"อิคคิว",red2:"เอ๊าะ",date:"1/4/2026"},
+
+{blue1:"ฟิล์ม",blue2:"หลุย",red1:"ปลิว",red2:"เต้",date:"2/4/2026"},
+{blue1:"บาส",blue2:"โอม",red1:"ลีโอ",red2:"บิ๊ว",date:"2/4/2026"},
+{blue1:"หลุย",blue2:"ปลาย",red1:"กิต",red2:"ปลิว",date:"2/4/2026"},
+{blue1:"ขวัญ",blue2:"น็อต",red1:"สอง",red2:"อิคคิว",date:"2/4/2026"},
+
+{blue1:"ขวัญ",blue2:"มอ",red1:"ลูกหว้า",red2:"ยิม",date:"3/4/2026"},
+{blue1:"แบงค์",blue2:"พี",red1:"เอ๊าะ",red2:"ลูกหว้า",date:"3/4/2026"},
+{blue1:"เมย์",blue2:"พิมพ์",red1:"อุ้ม",red2:"ศิ",date:"3/4/2026"},
+
+{blue1:"โอม",blue2:"น็อต",red1:"ยิม",red2:"สอง",date:"4/4/2026"},
+{blue1:"โอ๊ต",blue2:"โอม",red1:"ยิม",red2:"บิ๊ว",date:"4/4/2026"},
+{blue1:"เอก",blue2:"เมย์",red1:"เบญ",red2:"พู่กัน",date:"4/4/2026"},
+{blue1:"พิมพ์",blue2:"ปลื้ม",red1:"พู่กัน",red2:"อุ้ม",date:"4/4/2026"}
+
+]
+
+/* TEAM SET */
+
+let bluePlayers=new Set()
+let redPlayers=new Set()
+
+matches.forEach(m=>{
+bluePlayers.add(m.blue1)
+bluePlayers.add(m.blue2)
+redPlayers.add(m.red1)
+redPlayers.add(m.red2)
+})
+
+/* PLAYER COLOR */
+
+function playerName(name){
+
+if(bluePlayers.has(name)){
+return `<span style="color:#1565c0;font-weight:600">${name}</span>`
+}
+
+if(redPlayers.has(name)){
+return `<span style="color:#c21807;font-weight:600">${name}</span>`
+}
+
+return name
+
+}
+
+/* DATE */
+
+function parseDate(value){
+
+let p=value.split("/")
+return new Date(p[2],p[1]-1,p[0])
+
+}
+
+function formatDate(d){
+
+let day=("0"+d.getDate()).slice(-2)
+let month=("0"+(d.getMonth()+1)).slice(-2)
+let year=d.getFullYear()
+
+return `${day}/${month}/${year}`
+
+}
+
+/* DROPDOWN */
+
+function buildPlayers(){
+
+let select=document.getElementById("playerSelect")
+select.innerHTML=""
+
+let blueGroup=document.createElement("optgroup")
+blueGroup.label="🔵 ทีมดำ-น้ำเงิน"
+
+bluePlayers.forEach(p=>{
+let opt=document.createElement("option")
+opt.value=p
+opt.text=p
+blueGroup.appendChild(opt)
+})
+
+let redGroup=document.createElement("optgroup")
+redGroup.label="🔴 ทีมขาว-แดง"
+
+redPlayers.forEach(p=>{
+let opt=document.createElement("option")
+opt.value=p
+opt.text=p
+redGroup.appendChild(opt)
+})
+
+select.appendChild(blueGroup)
+select.appendChild(redGroup)
+
+}
+
+/* PLAYER MATCHES */
+
+function searchPlayer(){
+
+let name=document.getElementById("playerSelect").value
+let div=document.getElementById("playerMatches")
+div.innerHTML=""
+
+let list=[]
+
+matches.forEach(m=>{
+
+let d=parseDate(m.date)
+
+if(m.blue1==name || m.blue2==name){
+
+let partner=(m.blue1==name)?m.blue2:m.blue1
+
+list.push({
+date:d,
+text:`${formatDate(d)} — ${playerName(name)} / ${playerName(partner)} vs ${playerName(m.red1)} / ${playerName(m.red2)}`
+})
+
+}
+
+if(m.red1==name || m.red2==name){
+
+let partner=(m.red1==name)?m.red2:m.red1
+
+list.push({
+date:d,
+text:`${formatDate(d)} — ${playerName(name)} / ${playerName(partner)} vs ${playerName(m.blue1)} / ${playerName(m.blue2)}`
+})
+
+}
+
+})
+
+list.sort((a,b)=>a.date-b.date)
+
+list.forEach(m=>{
+let block=document.createElement("div")
+block.className="match"
+block.innerHTML=m.text
+div.appendChild(block)
+})
+
+}
+
+/* CALENDAR */
+
+function buildCalendar(){
+
+let calendar=document.getElementById("calendar")
+calendar.innerHTML=""
+
+let dates=[...new Set(matches.map(m=>m.date))]
+
+dates.sort((a,b)=>parseDate(a)-parseDate(b))
+
+dates.forEach(d=>{
+
+let div=document.createElement("div")
+div.className="calendar-day"
+div.innerText=d
+
+div.onclick=function(){
+showDailyMatches(d)
+}
+
+calendar.appendChild(div)
+
+})
+
+}
+
+/* DAILY MATCH */
+
+function showDailyMatches(date){
+
+let div=document.getElementById("dailyMatches")
+div.innerHTML=""
+
+matches.forEach(m=>{
+
+if(m.date==date){
+
+let block=document.createElement("div")
+block.className="match"
+
+block.innerHTML=`
+${playerName(m.blue1)} / ${playerName(m.blue2)}
+ vs 
+${playerName(m.red1)} / ${playerName(m.red2)}
+`
+
+div.appendChild(block)
+
+}
+
+})
+
+}
+
+buildPlayers()
+buildCalendar()
+
+</script>
+
+</body>
+</html>
