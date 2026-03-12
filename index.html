@@ -94,28 +94,6 @@ select{
 
 <script>
 
-function parseDate(dateStr){
-
-let parts = dateStr.split("/")
-
-let day = parseInt(parts[0])
-let month = parseInt(parts[1]) - 1
-let year = parseInt(parts[2])
-
-return new Date(year, month, day)
-
-}
-
-function formatDate(date){
-
-let d = ("0" + date.getDate()).slice(-2)
-let m = ("0" + (date.getMonth()+1)).slice(-2)
-let y = date.getFullYear()
-
-return `${d}/${m}/${y}`
-
-}
-
 /* ============================= */
 /* ใส่ URL CSV จาก Google Sheet */
 /* ============================= */
@@ -402,3 +380,4 @@ loadMatches()
 
 </body>
 </html>
+
