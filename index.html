@@ -172,7 +172,7 @@ return `<span style="color:#1565c0;font-weight:600">${name}</span>`
 }
 
 if(redPlayers.has(name)){
-return `<span style="color:#8b0000;font-weight:600">${name}</span>`
+return `<span style="color:#c40404;font-weight:600">${name}</span>`
 }
 
 return name
@@ -344,7 +344,7 @@ block.className="match"
 
 block.innerHTML=`
 ${playerName(m.blue1)} / ${playerName(m.blue2)}
-<br>vs<br>
+ vs 
 ${playerName(m.red1)} / ${playerName(m.red2)}
 `
 
@@ -380,4 +380,5 @@ loadMatches()
 
 </body>
 </html>
+
 
