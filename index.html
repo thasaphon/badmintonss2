@@ -135,7 +135,8 @@ blue1: c[0].trim(),
 blue2: c[1].trim(),
 red1: c[2].trim(),
 red2: c[3].trim(),
-date: c[4].trim()
+date: c[4].trim(),
+time: c[15] ? c[15].trim() : ""   // ⭐ เพิ่มตรงนี้
 })
 
 })
@@ -187,6 +188,23 @@ function parseDate(value){
 let p=value.split("/")
 
 return new Date(p[2],p[1]-1,p[0])
+
+}
+
+function parseTime(t){
+
+if(!t) return 9999 // ถ้าไม่มีเวลา ให้ไปอยู่ท้ายสุด
+
+let parts = t.split(":")
+
+if(parts.length < 2){
+parts = t.split(".") // รองรับ 18.00
+}
+
+let h = parseInt(parts[0]) || 0
+let m = parseInt(parts[1]) || 0
+
+return h*60 + m
 
 }
 
@@ -249,7 +267,13 @@ div.innerHTML=""
 
 let list=[]
 
-matches.forEach(m=>{
+let dayMatches = matches.filter(m=>m.date==date)
+
+/* ⭐ เรียงตามเวลา */
+
+dayMatches.sort((a,b)=>parseTime(a.time)-parseTime(b.time))
+
+dayMatches.forEach(m=>{
 
 let d=parseDate(m.date)
 
@@ -346,6 +370,8 @@ block.innerHTML=`
 ${playerName(m.blue1)} / ${playerName(m.blue2)}
  vs 
 ${playerName(m.red1)} / ${playerName(m.red2)}
+
+${m.time ? "⏰ เวลา " + m.time + " น." : ""}
 `
 
 div.appendChild(block)
@@ -380,5 +406,4 @@ loadMatches()
 
 </body>
 </html>
-
 
